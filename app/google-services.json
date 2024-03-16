@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1033464847757",
+    "project_id": "movieclubone-b4d5c",
+    "storage_bucket": "movieclubone-b4d5c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1033464847757:android:11cbf00b7f7e6ab9d371c4",
+        "android_client_info": {
+          "package_name": "com.example.movieclubone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1033464847757-cplrrtehtbi1i9o3hf2h7gv1d8jef5i7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.movieclubone",
+            "certificate_hash": "ff08dd1e025b81f43c28a0e9d115286a9e03f63e"
+          }
+        },
+        {
+          "client_id": "1033464847757-smeaatg7suid8b9forep01krrqa6dgq4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvPUu4j80ks2GT5vUf2iNxmafg-nfCZhs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1033464847757-smeaatg7suid8b9forep01krrqa6dgq4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

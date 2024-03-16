@@ -26,7 +26,7 @@ fun JoinClubID(navController: NavHostController) {
 
         Button(
             onClick = {
-                Log.d("JoinClubID", "Club ID: $clubId")},
+                navController.navigate("HomePage")},
                 // Here you can add the logic to handle club joining
             modifier = Modifier.padding(top = 8.dp)
         ) {
