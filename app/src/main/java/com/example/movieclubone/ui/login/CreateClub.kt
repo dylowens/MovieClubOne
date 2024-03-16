@@ -39,7 +39,7 @@ fun CreateClub(navController: NavHostController) {
 
         Button(
             onClick = {
-                Log.d("CreateClub", "Club Name: $clubName, Club ID: $clubId")
+                navController.navigate("HomePage")
                 // Here you can add the logic to handle club creation
             }
         ) {

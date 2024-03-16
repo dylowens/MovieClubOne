@@ -23,27 +23,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MovieClubOneTheme {
-                val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "SignInCreateAccount"){
-                    composable("SignInCreateAccount"){
-                        SignInCreateAccount(navController)
-                    }
-                    composable("SignIn"){
-                        SignIn(navController)
-                    }
-                    composable("CreateClub"){
-                        CreateClub(navController)
-                    }
-                    composable("JoinClubID"){
-                        JoinClubID(navController)
-                    }
-                    composable("CreateAccount"){
-                        CreateAccount(navController)
-                    }
-                    composable("JoinClubCreateClub"){
-                        JoinClubCreateClub(navController)
-                    }
-                }
+                //Navigation Routing Composable
+                Navigation()
+
 
             }
         }
