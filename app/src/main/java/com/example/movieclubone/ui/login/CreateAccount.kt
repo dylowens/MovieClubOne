@@ -10,9 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 
 @Composable
-fun CreateAccount() {
+fun CreateAccount(navController: NavHostController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var clubId by remember { mutableStateOf("") }
@@ -71,7 +72,7 @@ fun CreateAccount() {
         )
 
         Button(
-            onClick = { /* Handle create account */ },
+            onClick = { navController.navigate("JoinClubCreateClub") },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Create Account")

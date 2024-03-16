@@ -9,9 +9,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import android.util.Log
+import androidx.navigation.NavHostController
 
 @Composable
-fun JoinClubID() {
+fun JoinClubID(navController: NavHostController) {
     var clubId by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -24,7 +25,9 @@ fun JoinClubID() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { Log.d("JoinClub", "Trying to join club with ID: $clubId") },
+            onClick = {
+                Log.d("JoinClubID", "Club ID: $clubId")},
+                // Here you can add the logic to handle club joining
             modifier = Modifier.padding(top = 8.dp)
         ) {
             Text("Join Club")
