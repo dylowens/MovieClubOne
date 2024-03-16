@@ -10,18 +10,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import androidx.navigation.NavHostController
 
 @Composable
-fun SignInCreateAccount(onSignIn: () -> Unit, onCreateAccount: () -> Unit) {
+fun SignInCreateAccount(navController: NavHostController) {
     Column(
         modifier = Modifier.padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = onSignIn) {
+        Button(onClick = { navController.navigate("SignIn")}){
             Text(text = "Sign In")
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = onCreateAccount) {
+        Button(onClick = {navController.navigate("CreateAccount")}){
             Text(text = "Create Account")
         }
     }

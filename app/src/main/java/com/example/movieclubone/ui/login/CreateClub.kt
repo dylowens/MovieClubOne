@@ -11,9 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import android.util.Log
+import androidx.navigation.NavHostController
 
 @Composable
-fun CreateClub() {
+fun CreateClub(navController: NavHostController) {
     var clubName by remember { mutableStateOf("") }
     var clubId by remember { mutableStateOf("") }
 

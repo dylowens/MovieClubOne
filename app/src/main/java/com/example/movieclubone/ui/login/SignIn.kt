@@ -13,9 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 
 @Composable
-fun SignIn() {
+fun SignIn(navController: NavHostController) {
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val clubId = remember { mutableStateOf("") }
@@ -64,7 +65,7 @@ fun SignIn() {
                 innerTextField()
             }
         )
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { navController.navigate("JoinClubCreateClub")}) {
             Text(text = "Sign In")
         }
     }
