@@ -18,7 +18,7 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun HomePage(navController: NavHostController) {
     Scaffold(
-        bottomBar = { BottomNavigationBar() }
+        bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             TopIconContainer()
@@ -70,7 +70,7 @@ fun MainContentFeed() {
 }
 
 @Composable
-fun BottomNavigationBar() {
+fun BottomNavigationBar(navController: NavHostController){
 
 
     BottomAppBar {
@@ -93,7 +93,7 @@ fun BottomNavigationBar() {
             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Chat")
         }
         IconButton(
-            onClick = { /* Handle Profile Click */ },
+            onClick = { navController.navigate("ProfileSettings") },
             modifier = Modifier.weight(1f)
         ) {
             Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
