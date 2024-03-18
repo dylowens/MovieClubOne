@@ -10,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import android.util.Log
 import androidx.navigation.NavHostController
 
 @Composable
