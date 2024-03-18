@@ -3,23 +3,14 @@ package com.example.movieclubone
 
 
 import FirebaseUISignIn
-import android.util.Log
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.movieclubone.ui.login.AuthViewModel
 import com.example.movieclubone.ui.theme.MovieClubOneTheme
-import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
-import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 
 
 class MainActivity : ComponentActivity() {
@@ -44,12 +35,18 @@ class MainActivity : ComponentActivity() {
                 signInHelper = FirebaseUISignIn(this, signInLauncher)
 
 
+                // Set up the listener for sign-in result
                 signInHelper.setSignInResultListener(object : FirebaseUISignIn.SignInResultListener {
                     override fun onSignInSuccess() {
-                        Toast.makeText(this@MainActivity, "Sign in Successful", Toast.LENGTH_LONG).show()
+                        // Navigate to HomePage on successful sign-in
+                        navController.navigate("HomePage") {
+                            // Clear back stack to prevent back navigation to the sign-in screen
+                            popUpTo("SignIn") { inclusive = true }
+                        }
                     }
+
                     override fun onSignInFailed(errorCode: Int?) {
-                        Toast.makeText(this@MainActivity, "Sign in failed: $errorCode", Toast.LENGTH_LONG).show()
+                        // Handle sign-in failure (e.g., show a message to the user)
                     }
                 })
                 Navigation(this@MainActivity, navController, signInHelper, AuthViewModel())

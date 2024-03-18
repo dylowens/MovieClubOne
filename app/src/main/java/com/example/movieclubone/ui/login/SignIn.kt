@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.movieclubone.MainActivity
+
 
 
 @Composable
@@ -22,14 +22,14 @@ fun SignIn(navController: NavHostController, signInHelper: FirebaseUISignIn) {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-
         Button(
             onClick = {
+                // Trigger the sign-in flow
                 signInHelper.triggerSignInFlow()
-                navController.navigate("HomePage")
             }
         ) {
             Text(text = "Sign In")
         }
     }
 }
+
