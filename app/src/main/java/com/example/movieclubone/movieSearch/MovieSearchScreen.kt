@@ -93,7 +93,7 @@ fun MovieRow(movie: Movie, navController: NavController) {
     val imageUrlBase = "https://image.tmdb.org/t/p/$posterSize"
     val posterUrl = movie.posterPath?.let { imageUrlBase + it }
 
-    val route = "MovieDetails/${movie.id}"
+    val route = "MovieDetailsAPI/${movie.id}"
 
     Surface(
         modifier = Modifier
