@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MovieClubOne</string>
     <string name="web_client_id">1033464847757-cplrrtehtbi1i9o3hf2h7gv1d8jef5i7.apps.googleusercontent.com</string>
+    <string name="TMDB_API_KEY">cb4030177eea109517a8674905ae763f</string>
 </resources>
