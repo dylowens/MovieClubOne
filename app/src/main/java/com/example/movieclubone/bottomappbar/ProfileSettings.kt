@@ -1,4 +1,3 @@
-import FirebaseUISignIn
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.example.movieclubone.bottomappbar.BottomNavigationBar
 import com.example.movieclubone.ui.login.AuthViewModel

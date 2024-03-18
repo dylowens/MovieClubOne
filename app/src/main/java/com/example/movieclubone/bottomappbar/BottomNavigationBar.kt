@@ -14,12 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.movieclubone.ui.login.AuthViewModel
 
 @Composable
-fun BottomNavigationBar(navController: NavHostController, authViewModel: AuthViewModel) {
+fun BottomNavigationBar(navController: NavController, authViewModel: AuthViewModel) {
     // Observing user LiveData from AuthViewModel
     val user by authViewModel.user.observeAsState()
 

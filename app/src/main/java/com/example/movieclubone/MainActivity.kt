@@ -26,6 +26,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.movieclubone.bottomappbar.BottomNavigationBar
+import com.example.movieclubone.movieSearch.Movie
 import com.example.movieclubone.movieSearch.MovieApiService
 import com.example.movieclubone.movieSearch.MovieRepository
 import com.example.movieclubone.movieSearch.MoviesViewModel
@@ -85,7 +86,6 @@ class MainActivity : ComponentActivity() {
         }
 
         Scaffold(
-//            bottomBar = { BottomNavigationBar(navController, AuthViewModel()) }
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
                 Navigation(
@@ -93,7 +93,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     signInHelper = signInHelper,
                     authViewModel = AuthViewModel(),
-                    moviesViewModel = moviesViewModel
+                    moviesViewModel = moviesViewModel,
+                    movie = Movie()
                 )
             }
         }

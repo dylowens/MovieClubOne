@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.movieclubone.movieSearch.Movie
+import com.example.movieclubone.movieSearch.MovieDetails
 import com.example.movieclubone.movieSearch.MovieSearchScreen
 import com.example.movieclubone.movieSearch.MoviesViewModel
 import com.example.movieclubone.ui.login.AuthViewModel
@@ -22,7 +24,8 @@ fun Navigation(context: Context,
                navController: NavHostController,
                signInHelper: FirebaseUISignIn,
                authViewModel: AuthViewModel,
-               moviesViewModel: MoviesViewModel){
+               moviesViewModel: MoviesViewModel,
+               movie: Movie){
 
     NavHost(navController = navController, startDestination = "SignIn") {
         composable("SignIn") {
@@ -45,6 +48,18 @@ fun Navigation(context: Context,
         }
         composable("MovieSearchScreen") {
             MovieSearchScreen(navController, moviesViewModel, authViewModel)
+        }
+        composable("MovieDetails/{movieId}") { backStackEntry ->
+            val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull() ?: return@composable
+            val movie = moviesViewModel.getMovieById(movieId)
+
+            // Check if movie is not null before proceeding
+            movie?.let {
+                MovieDetails(it, navController)
+            } ?: run {
+                // Handle null case, e.g., showing an error, or navigate back
+                navController.popBackStack()
+            }
         }
     }
 }

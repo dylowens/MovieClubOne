@@ -23,4 +23,10 @@ class MoviesViewModel(private val movieRepository: MovieRepository): ViewModel()
             }
         }
     }
+
+    // Implementing getMovieById
+    fun getMovieById(movieId: Int): Movie? {
+        // Return the first movie that matches the ID, or null if no match is found.
+        return _moviesList.value.firstOrNull { movie -> movie.id == movieId }
+    }
 }
