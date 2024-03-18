@@ -8,13 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.movieclubone.bottomappbar.ProfileSettings
 import com.example.movieclubone.ui.login.AuthViewModel
-import com.example.movieclubone.ui.login.CreateAccount
 import com.example.movieclubone.ui.login.CreateClub
 import com.example.movieclubone.ui.login.SignIn
-import com.example.movieclubone.ui.login.SignInCreateAccount
+
 
 
 @Composable
