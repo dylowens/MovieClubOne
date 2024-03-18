@@ -21,9 +21,6 @@ import com.example.movieclubone.ui.login.SignInCreateAccount
 fun Navigation(context: Context, navController: NavHostController, signInHelper: FirebaseUISignIn, authViewModel: AuthViewModel){
 
     NavHost(navController = navController, startDestination = "SignIn") {
-        composable("SignInCreateAccount") {
-            SignInCreateAccount(navController)
-        }
         composable("SignIn") {
             SignIn(navController, signInHelper)
         }
@@ -32,9 +29,6 @@ fun Navigation(context: Context, navController: NavHostController, signInHelper:
         }
         composable("JoinClubID") {
             JoinClubID(navController)
-        }
-        composable("CreateAccount") {
-            CreateAccount(navController)
         }
         composable("JoinClubCreateClub") {
             JoinClubCreateClub(navController)
