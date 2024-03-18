@@ -8,17 +8,25 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import com.example.movieclubone.ui.login.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
+
+
 
 @Composable
-fun HomePage(navController: NavHostController) {
+fun HomePage(navController: NavHostController, authViewModel: AuthViewModel) {
+
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
+        bottomBar = { BottomNavigationBar(navController, authViewModel) }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             TopIconContainer()
@@ -70,8 +78,9 @@ fun MainContentFeed() {
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavHostController){
-
+fun BottomNavigationBar(navController: NavHostController, authViewModel: AuthViewModel) {
+    // Observing user LiveData from AuthViewModel
+    val user by authViewModel.user.observeAsState()
 
     BottomAppBar {
         IconButton(
@@ -96,14 +105,23 @@ fun BottomNavigationBar(navController: NavHostController){
             onClick = { navController.navigate("ProfileSettings") },
             modifier = Modifier.weight(1f)
         ) {
-            Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
+            // Check if the photo URL is not null; if it is, display a default icon
+            if (user?.photoUrl != null) {
+                AsyncImage(
+                    model = user?.photoUrl.toString(),
+                    contentDescription = "Profile",
+                    modifier = Modifier.size(24.dp) // Set the size of the image
+                )
+            } else {
+                // Default profile icon if photo URL is null
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Profile",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    val navController = rememberNavController()
-    HomePage(navController)
-}
+

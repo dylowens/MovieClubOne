@@ -1,5 +1,8 @@
 package com.example.movieclubone.bottomappbar
 
+import FirebaseUISignIn
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,13 +14,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
 import com.example.movieclubone.MainActivity
-import com.example.movieclubone.ui.login.FirebaseUISignIn
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.Auth.GOOGLE_SIGN_IN_API
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+
 
 @Composable
-fun ProfileSettings(navController: NavHostController) {
+fun ProfileSettings(context: Context, navController: NavHostController, signInHelper: FirebaseUISignIn){
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -27,14 +36,27 @@ fun ProfileSettings(navController: NavHostController) {
         // Profile settings options here
         // For example, Sign Out
         Button(
-            onClick = { FirebaseAuth.getInstance().signOut()
-
-//                      navController.navigate("SignIn")
+            onClick = { signInHelper.triggerSignOut()
+                        navController.navigate("HomePage")
+                        Toast.makeText(context, "Signed Out", Toast.LENGTH_SHORT).show()
                       },
-// After sign out, handle what you want to do next (e.g., navigate the user to the sign-in screen).
             modifier = Modifier.padding(top = 16.dp)
+
         ) {
             Text("Sign Out")
+        }
+        Button(
+            onClick = {
+                if (Firebase.auth.currentUser != null) {
+                    Toast.makeText(context, "You are already signed in", Toast.LENGTH_SHORT).show()
+                } else {
+                    navController.navigate("SignIn")
+                }
+            },
+            modifier = Modifier.padding(top = 16.dp)
+
+        ) {
+            Text("Sign In with Google")
         }
     }
 }

@@ -1,23 +1,41 @@
-package com.example.movieclubone.ui.login
-
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.navigation.NavHostController
+import android.app.Activity
+import android.app.Activity.RESULT_OK
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings.System.getString
+import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat.startActivity
+import com.example.movieclubone.MainActivity
+import com.example.movieclubone.R
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
-import com.google.firebase.auth.FirebaseUser
-class FirebaseUISignIn(private val activity: ComponentActivity) {
+class FirebaseUISignIn(private val activity: Activity, private val signInLauncher: ActivityResultLauncher<Intent>) {
 
-    private val signInLauncher = activity.registerForActivityResult(
-        FirebaseAuthUIActivityResultContract(),
-    ) { res ->
-        this.onSignInResult(res)
+
+    private val gso: GoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(activity.getString(R.string.web_client_id)) // Use string resource
+        .requestEmail()
+        .build()
+
+    private val googleSignInClient = GoogleSignIn.getClient(activity, gso)
+
+    interface SignInResultListener {
+        fun onSignInSuccess()
+        fun onSignInFailed(errorCode: Int?)
     }
-   fun SignIn() {
-        //firebase
+
+    private var signInResultListener: SignInResultListener? = null
+
+    fun setSignInResultListener(listener: SignInResultListener) {
+        signInResultListener = listener
+    }
+
+    fun startSignInFlow() {
         // Choose authentication providers
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
@@ -30,29 +48,39 @@ class FirebaseUISignIn(private val activity: ComponentActivity) {
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
             .build()
+
         signInLauncher.launch(signInIntent)
     }
 
+    fun triggerSignInFlow() {
+        startSignInFlow()
+    }
 
-    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+    fun triggerSignOut() {
+        // Firebase sign out
+        FirebaseAuth.getInstance().signOut()
+
+        // Google sign out
+        googleSignInClient.signOut().addOnCompleteListener(activity) {
+            // Handle sign-out success, for example, navigate the user to the sign-in screen
+        }.continueWithTask {
+            // Now, disconnect the account to ensure the account picker is shown next time
+            googleSignInClient.revokeAccess()
+        }.addOnCompleteListener(activity) {
+            // After successfully revoking access, navigate back to your main activity or login screen
+            val intent = Intent(activity, MainActivity::class.java) // Adjust to your main activity
+            activity.startActivity(intent)
+            activity.finish()
+        }
+    }
+
+
+    fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
-
-        if (result.resultCode == ComponentActivity.RESULT_OK) {
-            // Successfully signed in
-            Toast.makeText(activity, "Sign in Successful", Toast.LENGTH_LONG).show()
-            val user = FirebaseAuth.getInstance().currentUser
-
-
-
-            // ...
+        if (result.resultCode == RESULT_OK) {
+            signInResultListener?.onSignInSuccess()
         } else {
-            // Sign in failed. If response is null the user canceled the
-            // sign-in flow using the back button. Otherwise check
-            // response.getError().getErrorCode() and handle the error.
-            // ...
-            Toast.makeText(activity, "Sign in failed: ${response?.error?.errorCode}", Toast.LENGTH_LONG)
-                .show()
-
+            signInResultListener?.onSignInFailed(response?.error?.errorCode)
         }
     }
 }
