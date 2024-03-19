@@ -48,7 +48,7 @@ import com.example.movieclubone.ui.login.SignIn
                 JoinClubCreateClub(navController)
             }
             composable("HomePage") {
-                HomePage(navController, authViewModel)
+                HomePage(navController, authViewModel, movie)
             }
             composable("ProfileSettings") {
                 ProfileSettings(context, navController, signInHelper, authViewModel)
