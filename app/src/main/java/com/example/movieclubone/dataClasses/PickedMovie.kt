@@ -2,7 +2,7 @@ package com.example.movieclubone.dataClasses
 
 import com.example.movieclubone.movieSearch.Movie
 
-data class ChosenMovie(
+data class PickedMovie(
     val movie: Movie,
     val userId: String = "",
     val userName: String = "",

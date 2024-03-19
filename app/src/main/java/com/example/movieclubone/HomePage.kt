@@ -20,7 +20,7 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.movieclubone.ui.login.AuthViewModel
 import com.example.movieclubone.bottomappbar.BottomNavigationBar
-import com.example.movieclubone.dataClasses.ChosenMovie
+import com.example.movieclubone.dataClasses.PickedMovie
 import com.example.movieclubone.dataClasses.Users
 import com.example.movieclubone.movieSearch.Movie
 import com.example.movieclubone.movieSearch.MoviePoster
@@ -39,11 +39,12 @@ fun HomePage(
     turnOrder: TurnOrder,
     moviesViewModel: MoviesViewModel
 ) {
-    val chosenMovies = remember { mutableStateOf<List<ChosenMovie>>(emptyList()) }
-    val featuredMovie = remember { mutableStateOf<Movie?>(null) }
+    val pickedMovies = remember { mutableStateOf<List<PickedMovie>>(emptyList()) }
+    // Change the featuredMovie to hold a PickedMovie? instead of Movie?
+    val featuredMovie = remember { mutableStateOf<PickedMovie?>(null) }
     val scope = rememberCoroutineScope()
 
-// Fetching the featured movie from Firestore
+
     LaunchedEffect(key1 = "featuredMovie") {
         scope.launch {
             Log.d("HomePage", "Fetching featured movie")
@@ -52,25 +53,34 @@ fun HomePage(
                     .document("featuredMovie")
                     .get()
                     .await()
-                featuredMovie.value = featuredMovieSnapshot.toObject<Movie>()
-                Log.d("HomePage", "Featured movie fetched: ${featuredMovie.value?.title}")
+                val movie = featuredMovieSnapshot.toObject<Movie>() // Get the Movie object
+                // Assuming userName and userId are stored within the same document
+                // If not, adjust the fetching logic accordingly
+                val userName = featuredMovieSnapshot.getString("userName") ?: "Unknown"
+                val userId = featuredMovieSnapshot.getString("userId") ?: ""
+                val turnOrderEndDate = featuredMovieSnapshot.getLong("turnOrderEndDate") ?: 0L
+                if (movie != null) {
+                    featuredMovie.value = PickedMovie(movie, userId, userName, turnOrderEndDate)
+                }
+                Log.d("HomePage", "Featured movie fetched: ${featuredMovie.value?.movie?.title}")
             } catch (e: Exception) {
                 Log.e("HomePage", "Error fetching featured movie", e)
             }
         }
     }
 
+
     LaunchedEffect(key1 = true) {
         scope.launch {
             Log.d("HomePage", "Fetching chosen movies")
             try {
-                val fetchedChosenMovies = Firebase.firestore.collection("chosenMovies")
+                val fetchedPickedMovies = Firebase.firestore.collection("chosenMovies")
                     .orderBy("timestamp", Query.Direction.DESCENDING)
                     .get()
                     .await()
                     .documents.mapNotNull { document ->
                         document.toObject(Movie::class.java)?.let { movie ->
-                            ChosenMovie(
+                            PickedMovie(
                                 movie = movie,
                                 userId = document.getString("userId") ?: "",
                                 userName = document.getString("userName") ?: "",
@@ -78,12 +88,12 @@ fun HomePage(
                             )
                         }
                     }
-                if (fetchedChosenMovies.isNotEmpty()) {
-                    Log.d("HomePage", "Chosen movies fetched successfully: ${fetchedChosenMovies.size} movies")
+                if (fetchedPickedMovies.isNotEmpty()) {
+                    Log.d("HomePage", "Chosen movies fetched successfully: ${fetchedPickedMovies.size} movies")
                 } else {
                     Log.d("HomePage", "No chosen movies found")
                 }
-                chosenMovies.value = fetchedChosenMovies
+                pickedMovies.value = fetchedPickedMovies
             } catch (e: Exception) {
                 Log.e("HomePage", "Error fetching chosen movies", e)
             }
@@ -98,7 +108,7 @@ fun HomePage(
         Column(modifier = Modifier.padding(innerPadding)) {
             TopIconContainer(turnOrder)
             if (featuredMovie.value != null) {
-                MainContentFeed(featuredMovie, chosenMovies.value) // Here featuredMovie is already State<Movie?>
+                MainContentFeed(featuredMovie, pickedMovies.value) // Here featuredMovie is already State<Movie?>
             }
         }
     }
@@ -151,40 +161,38 @@ fun TopIconContainer(turnOrder: TurnOrder) {
 
 
 @Composable
-fun MainContentFeed(featuredMovieState: State<Movie?>, movies: List<ChosenMovie>) {
+fun MainContentFeed(featuredMovie: MutableState<PickedMovie?>, movies: List<PickedMovie>) {
     val currentDate = "March 20, 2024" // Example dynamic date
-    val featuredMovie = featuredMovieState.value
 
     LazyColumn {
-        featuredMovie?.let { movie ->
+        featuredMovie?.let {
             item {
-                FeaturedMovieItem(movie, currentDate)
+                FeaturedMovieItem(it, currentDate)
             }
         }
 
         // Display the rest of the movies
-        items(movies.drop(1)) { chosenMovie ->
-            PreviouslyWatchedMovieItem(chosenMovie)
+        items(movies.drop(1)) { pickedMovie ->
+            PreviouslyWatchedMovieItem(pickedMovie)
         }
     }
 }
-
 @Composable
-fun FeaturedMovieItem(movie: Movie, currentDate: String){
+fun FeaturedMovieItem(pickedMovieState: MutableState<PickedMovie?>, currentDate: String) {
+    val pickedMovie = pickedMovieState.value // Extract the PickedMovie object from the state
     Box(modifier = Modifier.fillMaxWidth()) {
         // Background for attention drawing graphics
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer) // Themed background
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         ) {
             // Custom layout for the first item
             Column(modifier = Modifier.padding(16.dp)) {
                 // Assuming you have a 'MoviePoster' composable
-
-                movie.posterPath?.let {
-                    MoviePoster(movie = movie)
+                pickedMovie?.movie?.posterPath?.let { posterPath ->
+                    MoviePoster(movie = pickedMovie.movie) // You might need to adjust MoviePoster if it expects a Movie object
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -197,8 +205,14 @@ fun FeaturedMovieItem(movie: Movie, currentDate: String){
 
                 // Movie details
                 Text(
-                    text = movie.title,
+                    text = pickedMovie?.movie?.title ?: "Unknown Movie",
                     style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+
+                Text(
+                    text = "Picked by: ${pickedMovie?.userName ?: "Unknown"}",
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
@@ -220,8 +234,9 @@ fun FeaturedMovieItem(movie: Movie, currentDate: String){
     }
 }
 
+
 @Composable
-fun PreviouslyWatchedMovieItem(chosenMovie: ChosenMovie) {
+fun PreviouslyWatchedMovieItem(pickedMovie: PickedMovie) {
     // Display for each previously watched movie
     Card(
         modifier = Modifier
@@ -231,7 +246,7 @@ fun PreviouslyWatchedMovieItem(chosenMovie: ChosenMovie) {
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(
-                text = "Previously Watched: ${chosenMovie.movie.title}",
+                text = "Previously Watched: ${pickedMovie.movie.title}",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
