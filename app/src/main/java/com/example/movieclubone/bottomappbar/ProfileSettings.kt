@@ -36,6 +36,13 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.movieclubone.TurnOrder
+import com.example.movieclubone.dataClasses.Users
+import com.example.movieclubone.movieSearch.MoviesViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay // Import for simulated delay
 
 
@@ -45,10 +52,22 @@ fun ProfileSettings(
     context: Context,
     navController: NavHostController,
     signInHelper: FirebaseUISignIn,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    turnOrder: TurnOrder,
+    moviesViewModel: MoviesViewModel,
 ) {
-    // This already collects the flow and represents its latest value.
+    var currentUserTurnOrder by remember { mutableStateOf<Int?>(null) }
     val movies by getUserMovies().collectAsState(initial = emptyList())
+
+    // Fetch the current user's turn order
+    LaunchedEffect(key1 = Unit) {
+        Log.d("ProfileSettings", "Fetching turn order")
+
+        turnOrder.fetchTurnOrder { _, userTurnOrder ->
+            currentUserTurnOrder = userTurnOrder
+            Log.d("ProfileSettings", "User turn order: $currentUserTurnOrder")
+        }
+    }
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController, authViewModel) }
@@ -70,6 +89,31 @@ fun ProfileSettings(
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text("Sign Out")
+            }
+
+            // Check if user is current turn
+            if (currentUserTurnOrder == 0 && movies?.isNotEmpty() == true) {
+                Log.d("ProfileSettings", "User is current turn")
+                Button(
+                    onClick = {
+                        val firebaseUser = FirebaseAuth.getInstance().currentUser
+                        firebaseUser?.let { user ->
+                            val customUserDetails = Users( // Assuming you have a Users data class
+                                uid = user.uid,
+                                displayName = user.displayName ?: "",
+                                photoUrl = user.photoUrl.toString(),
+                                // include other fields your Users class might require
+                            )
+                            movies?.first()?.let { movie ->
+                                moviesViewModel.addMovieToChosen(movie, customUserDetails) // Adjust according to actual method parameters
+                                Toast.makeText(context, "Movie set for group watching", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Text("+Choose Movie")
+                }
             }
 
             // Check if movies are null (loading)
