@@ -137,7 +137,8 @@ class MainActivity : ComponentActivity() {
                     signInHelper = signInHelper,
                     authViewModel = AuthViewModel(),
                     moviesViewModel = moviesViewModel,
-                    movie = Movie()
+                    movie = Movie(),
+                    turnOrder = turnOrder,
                 )
             }
         }

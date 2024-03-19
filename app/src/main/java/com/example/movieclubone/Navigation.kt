@@ -15,6 +15,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.movieclubone.dataClasses.Users
 import com.example.movieclubone.movieSearch.Movie
 import com.example.movieclubone.movieSearch.MovieDetails
 import com.example.movieclubone.movieSearch.MovieDetailsAPI
@@ -31,7 +32,8 @@ import com.example.movieclubone.ui.login.SignIn
         signInHelper: FirebaseUISignIn,
         authViewModel: AuthViewModel,
         moviesViewModel: MoviesViewModel,
-        movie: Movie
+        movie: Movie,
+        turnOrder: TurnOrder,
     ) {
 
         NavHost(navController = navController, startDestination = "SignIn") {
@@ -48,10 +50,10 @@ import com.example.movieclubone.ui.login.SignIn
                 JoinClubCreateClub(navController)
             }
             composable("HomePage") {
-                HomePage(navController, authViewModel, movie)
+                HomePage(navController, authViewModel, turnOrder, moviesViewModel)
             }
             composable("ProfileSettings") {
-                ProfileSettings(context, navController, signInHelper, authViewModel)
+                ProfileSettings(context, navController, signInHelper, authViewModel, turnOrder, moviesViewModel)
             }
             composable("MovieSearchScreen") {
                 MovieSearchScreen(navController, moviesViewModel, authViewModel)
