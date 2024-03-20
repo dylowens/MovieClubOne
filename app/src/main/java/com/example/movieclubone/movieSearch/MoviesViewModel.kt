@@ -3,6 +3,8 @@ package com.example.movieclubone.movieSearch
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.movieclubone.dataClasses.Users
@@ -16,6 +18,12 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class MoviesViewModel(private val movieRepository: MovieRepository): ViewModel() {
+    // LiveData to persist the ability of the user to choose a movie
+    private val _canChooseMovie = MutableLiveData(true)
+    val canChooseMovie: LiveData<Boolean> = _canChooseMovie
+    fun setCanChooseMovie(canChoose: Boolean) {
+        _canChooseMovie.value = canChoose
+    }
 
     private val _moviesList = mutableStateOf<List<Movie>>(emptyList())
     val moviesList: State<List<Movie>> = _moviesList
