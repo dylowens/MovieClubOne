@@ -1,4 +1,4 @@
-package com.example.movieclubone.ui.login
+package com.example.movieclubone.ui.Pages
 
 import FirebaseUISignIn
 import androidx.compose.foundation.layout.Box

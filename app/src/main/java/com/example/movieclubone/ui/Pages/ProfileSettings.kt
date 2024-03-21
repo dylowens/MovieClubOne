@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil.compose.rememberImagePainter
 import com.example.movieclubone.bottomappbar.BottomNavigationBar
 import com.example.movieclubone.ui.login.AuthViewModel
 import com.example.movieclubone.movieSearch.Movie
@@ -36,17 +35,18 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.example.movieclubone.TurnOrder
-import com.example.movieclubone.dataClasses.Users
-import com.example.movieclubone.movieSearch.MoviesViewModel
-import com.google.firebase.auth.FirebaseAuth
+import com.example.movieclubone.ViewModels.MoviesViewModel
 import kotlinx.coroutines.delay // Import for simulated delay
+import com.example.movieclubone.dataClasses.Users
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
-
-// Adjust the Composable function signature as needed
 @Composable
 fun ProfileSettings(
     context: Context,
@@ -57,26 +57,55 @@ fun ProfileSettings(
     moviesViewModel: MoviesViewModel,
 ) {
     var currentUserTurnOrder by remember { mutableStateOf<Int?>(null) }
+    var currentUser by remember { mutableStateOf<Users?>(null) }
     val movies by getUserMovies().collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
+    val canChooseMovie by moviesViewModel.canChooseMovie.observeAsState(true)
+
 
     // Fetch the current user's turn order
+    Log.d("ProfileSettings", "Current state of canChooseMovie at beginning of profile setting load $canChooseMovie")
     LaunchedEffect(key1 = Unit) {
-        Log.d("ProfileSettings", "Fetching turn order")
+        scope.launch {
+            currentUser = getCurrentUserAsync()
+            Log.d("ProfileSettings", "Current user fetched: ${currentUser?.displayName}")
 
-        turnOrder.fetchTurnOrder { _, userTurnOrder ->
-            currentUserTurnOrder = userTurnOrder
-            Log.d("ProfileSettings", "User turn order: $currentUserTurnOrder")
+            turnOrder.fetchTurnOrder { _, userTurnOrder ->
+                currentUserTurnOrder = userTurnOrder
+                Log.d("ProfileSettings", "User turn order: $currentUserTurnOrder")
+            }
         }
     }
+
+    LaunchedEffect(key1 = "featuredMovieCheck") {
+        scope.launch {
+            val featuredMovieRef = Firebase.firestore.collection("systemData").document("featuredMovie")
+            try {
+                val document = featuredMovieRef.get().await()
+                val featuredMovieUserId = document.getString("userId")
+                val isCurrentUserFeatured = currentUser?.uid == featuredMovieUserId
+                if (isCurrentUserFeatured) {
+                    moviesViewModel.setCanChooseMovie(false)
+                }
+
+                Log.d("ProfileSettings", "Featured movie check completed: canChooseMovie = $canChooseMovie")
+                Log.d("ProfileSettings", "Is current user admin?: ${currentUser?.isAdmin}")
+            } catch (e: Exception) {
+                Log.e("ProfileSettings", "Error fetching featured movie", e)
+                // Optionally, handle the error case by setting canChooseMovie accordingly
+            }
+        }
+    }
+
 
     Scaffold(
         bottomBar = { BottomNavigationBar(navController, authViewModel) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .padding(innerPadding),
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Sign Out Button
@@ -90,23 +119,31 @@ fun ProfileSettings(
             ) {
                 Text("Sign Out")
             }
-
-            // Check if user is current turn
-            if (currentUserTurnOrder == 0 && movies?.isNotEmpty() == true) {
-                Log.d("ProfileSettings", "User is current turn")
+            if (currentUser?.isAdmin == true) {
+                Log.d("ProfileSettings", "Current user is admin")
                 Button(
                     onClick = {
-                        val firebaseUser = FirebaseAuth.getInstance().currentUser
-                        firebaseUser?.let { user ->
-                            val customUserDetails = Users( // Assuming you have a Users data class
-                                uid = user.uid,
-                                displayName = user.displayName ?: "",
-                                photoUrl = user.photoUrl.toString(),
-                                // include other fields your Users class might require
-                            )
-                            movies?.first()?.let { movie ->
-                                moviesViewModel.addMovieToChosen(movie, customUserDetails) // Adjust according to actual method parameters
-                                Toast.makeText(context, "Movie set for group watching", Toast.LENGTH_SHORT).show()
+                        navController.navigate("AdminPage")
+                    },
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Text("Admin Page")
+                }
+            }
+            if (currentUser?.turnOrder == 0 && canChooseMovie) {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            movies?.firstOrNull()?.let { movie ->
+                                try {
+                                    moviesViewModel.setFeaturedMovie(movie, currentUser!!)
+                                    // Consider moving this line inside setFeaturedMovie if it performs async operations
+                                    // and updating the canChooseMovie there after the Firestore update is confirmed
+                                    moviesViewModel.setCanChooseMovie(false)
+                                    Toast.makeText(context, "Movie set for group watching", Toast.LENGTH_SHORT).show()
+                                } catch (e: Exception) {
+                                    Log.e("ProfileSettings", "Error setting featured movie: ${e.message}")
+                                }
                             }
                         }
                     },
@@ -116,20 +153,25 @@ fun ProfileSettings(
                 }
             }
 
-            // Check if movies are null (loading)
-            if (movies == null) {
-                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-            } else {
-                // Movies list displayed after the "Sign Out" button
-                LazyColumn {
-                    items(movies ?: emptyList()) { movie ->
-                        MovieItem(movie, navController)
-                    }
+
+
+        // Check if movies are null (loading)
+        if (movies == null) {
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                items(movies ?: emptyList()) { movie ->
+                    MovieItem(movie, navController)
                 }
             }
         }
     }
+    }
 }
+
 
 @Composable
 fun MovieItem(movie: Movie, navController: NavController) {
@@ -140,9 +182,9 @@ fun MovieItem(movie: Movie, navController: NavController) {
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable {
-                    // Navigate to MovieDetails screen with the movie ID as an argument
-                    navController.navigate(route)
-                       },
+                // Navigate to MovieDetails screen with the movie ID as an argument
+                navController.navigate(route)
+            },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
         // Movie Poster
@@ -213,4 +255,25 @@ fun addMovieToUserProfile(movie: Movie) {
 }
 
 
+
+
+suspend fun getCurrentUserAsync(): Users? {
+    val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return null
+    val userDocument = Firebase.firestore.collection("users").document(firebaseUser.uid).get().await()
+
+    // Assuming that turnOrder and nextPickDate are stored within the user's document in Firestore
+    val turnOrder = userDocument.getLong("turnOrder")?.toInt() // Firestore stores numbers as Long, convert to Int
+    val nextPickDate = userDocument.getDate("nextPickDate") // Firestore can store and retrieve Date objects directly
+    val isAdmin = userDocument.getBoolean("isAdmin")
+
+    return Users(
+        uid = firebaseUser.uid,
+        displayName = firebaseUser.displayName,
+//        photoUrl = firebaseUser.photoURL?.toString(),
+        turnOrder = turnOrder,
+        nextPickDate = nextPickDate,
+        isAdmin = isAdmin
+    )
+
+}
 

@@ -7,9 +7,9 @@ data class Users(
     val displayName: String? = null,
     val photoUrl: String? = null,
     val turnOrder: Int? = null,
-    val nextPickDate: Date? = null
+    val nextPickDate: Date? = null,
+    val isAdmin: Boolean? = null
 )
-
 
 
 

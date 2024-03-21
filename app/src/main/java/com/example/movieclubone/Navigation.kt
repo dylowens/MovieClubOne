@@ -3,27 +3,25 @@ package com.example.movieclubone
 import FirebaseUISignIn
 import JoinClubCreateClub
 import JoinClubID
+import PreviouslyChosenPage
 import ProfileSettings
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.movieclubone.dataClasses.Users
+import com.example.movieclubone.ui.Pages.AdminPage
 import com.example.movieclubone.movieSearch.Movie
-import com.example.movieclubone.movieSearch.MovieDetails
-import com.example.movieclubone.movieSearch.MovieDetailsAPI
-import com.example.movieclubone.movieSearch.MovieSearchScreen
-import com.example.movieclubone.movieSearch.MoviesViewModel
+import com.example.movieclubone.ui.Pages.MovieDetails
+import com.example.movieclubone.ui.Pages.MovieDetailsAPI
+import com.example.movieclubone.ui.Pages.MovieSearchScreen
+import com.example.movieclubone.ViewModels.MoviesViewModel
+import com.example.movieclubone.ui.Pages.HomePage
 import com.example.movieclubone.ui.login.AuthViewModel
 import com.example.movieclubone.ui.login.CreateClub
-import com.example.movieclubone.ui.login.SignIn
+import com.example.movieclubone.ui.Pages.SignIn
 
     @Composable
     fun Navigation(
@@ -67,6 +65,13 @@ import com.example.movieclubone.ui.login.SignIn
                     )
                 }
             }
+            composable("AdminPage") {
+                AdminPage(navController)
+            }
+            composable("PreviouslyChosenPage") {
+                PreviouslyChosenPage(navController, moviesViewModel)
+            }
+
             // Destination for MovieDetailsAPI
             composable(
                 route = "MovieDetailsAPI/{movieId}",
