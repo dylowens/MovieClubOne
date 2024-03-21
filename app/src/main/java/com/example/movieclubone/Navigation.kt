@@ -1,5 +1,7 @@
 package com.example.movieclubone
 
+import ChatScreen
+import ChatViewModel
 import FirebaseUISignIn
 import JoinClubCreateClub
 import JoinClubID
@@ -30,8 +32,8 @@ import com.example.movieclubone.ui.Pages.SignIn
         signInHelper: FirebaseUISignIn,
         authViewModel: AuthViewModel,
         moviesViewModel: MoviesViewModel,
-        movie: Movie,
         turnOrder: TurnOrder,
+        chatViewModel: ChatViewModel
     ) {
 
         NavHost(navController = navController, startDestination = "SignIn") {
@@ -55,6 +57,9 @@ import com.example.movieclubone.ui.Pages.SignIn
             }
             composable("MovieSearchScreen") {
                 MovieSearchScreen(navController, moviesViewModel, authViewModel)
+            }
+            composable("ChatScreen") {
+                ChatScreen(navController, chatViewModel)
             }
             composable("MovieDetails/{movieId}") { backStackEntry ->
                 backStackEntry.arguments?.getString("movieId")?.toIntOrNull()?.let { movieId ->

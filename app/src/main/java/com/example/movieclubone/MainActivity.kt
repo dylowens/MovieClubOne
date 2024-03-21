@@ -1,5 +1,6 @@
 package com.example.movieclubone
 
+import ChatViewModel
 import FirebaseUISignIn
 import android.content.Context
 import android.os.Bundle
@@ -21,6 +22,7 @@ import com.example.movieclubone.ui.login.AuthViewModel
 import com.example.movieclubone.ui.theme.MovieClubOneTheme
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -28,24 +30,46 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : ComponentActivity() {
     private lateinit var signInHelper: FirebaseUISignIn
-
+    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+    private lateinit var auth: FirebaseAuth
+    private val chatViewModel = ChatViewModel()
     // Firebase SignInLauncher
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
     ) { res ->
         signInHelper.onSignInResult(res)
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MovieClubOneTheme {
                 MainContent(this)
-
             }
         }
-
+        auth = FirebaseAuth.getInstance()
+        authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            if (firebaseAuth.currentUser != null) {
+                // User is signed in
+                chatViewModel.onUserAuthenticationChange()
+            } else {
+                // User is signed out
+                chatViewModel.onUserSignedOut()
+            }
+        }
     }
+
+    override fun onStart() {
+        super.onStart()
+        auth.addAuthStateListener(authStateListener)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if(::authStateListener.isInitialized) {
+            auth.removeAuthStateListener(authStateListener)
+        }
+    }
+
 
     @Composable
     fun MainContent(context: Context) {
@@ -138,8 +162,8 @@ class MainActivity : ComponentActivity() {
                     signInHelper = signInHelper,
                     authViewModel = AuthViewModel(),
                     moviesViewModel = moviesViewModel,
-                    movie = Movie(),
                     turnOrder = turnOrder,
+                    chatViewModel = ChatViewModel()
                 )
             }
         }
