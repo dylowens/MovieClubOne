@@ -37,7 +37,7 @@ fun BottomNavigationBar(navController: NavController, authViewModel: AuthViewMod
             Icon(Icons.Default.Search, contentDescription = "Search")
         }
         IconButton(
-            onClick = { /* Handle Chat Click */ },
+            onClick = {navController.navigate("ChatScreen") },
             modifier = Modifier.weight(1f)
         ) {
             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Chat")
