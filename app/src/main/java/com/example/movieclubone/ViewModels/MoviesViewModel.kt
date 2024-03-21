@@ -1,4 +1,4 @@
-package com.example.movieclubone.movieSearch
+package com.example.movieclubone.ViewModels
 
 import android.util.Log
 import androidx.compose.runtime.State
@@ -7,22 +7,37 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.movieclubone.dataClasses.ChosenMovie
 import com.example.movieclubone.dataClasses.Users
+import com.example.movieclubone.movieSearch.Movie
+import com.example.movieclubone.movieSearch.MovieRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MoviesViewModel(private val movieRepository: MovieRepository): ViewModel() {
     // LiveData to persist the ability of the user to choose a movie
     private val _canChooseMovie = MutableLiveData(true)
     val canChooseMovie: LiveData<Boolean> = _canChooseMovie
+
+    private val _chosenMovies = MutableStateFlow<List<ChosenMovie>>(emptyList())
+    val chosenMovies: StateFlow<List<ChosenMovie>> = _chosenMovies
     fun setCanChooseMovie(canChoose: Boolean) {
         _canChooseMovie.value = canChoose
+    }
+
+    init {
+        fetchChosenMovies()
     }
 
     private val _moviesList = mutableStateOf<List<Movie>>(emptyList())
@@ -52,24 +67,58 @@ class MoviesViewModel(private val movieRepository: MovieRepository): ViewModel()
     }
 
     fun setFeaturedMovie(movie: Movie, user: Users) {
+
+        fun convertMillisToFormattedDate(millis: Long): String {
+            val date = Date(millis)
+            val formatter = SimpleDateFormat("MMMM, d", Locale.getDefault())
+            val dayFormat = SimpleDateFormat("d", Locale.getDefault())
+            val day = dayFormat.format(date).toInt()
+
+            val suffix = when (day) {
+                1, 21, 31 -> "st"
+                2, 22 -> "nd"
+                3, 23 -> "rd"
+                else -> "th"
+            }
+
+            return formatter.format(date) + suffix
+        }
+
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // Example: Storing the featured movie in Firestore
+                val currentTimeMillis = System.currentTimeMillis()
+                val turnOrderEndDateMillis = currentTimeMillis + 1209600000 // 2 weeks in ms
+                val turnOrderEndDateFormatted = convertMillisToFormattedDate(turnOrderEndDateMillis)
+
                 val movieData = mapOf(
                     "title" to movie.title,
                     "posterPath" to movie.posterPath,
                     "userId" to user.uid,
                     "userName" to user.displayName,
-                    "turnOrderEndDate" to System.currentTimeMillis() + 1209600000, // 2 weeks in ms
-                    "timestamp" to System.currentTimeMillis()
+                    "turnOrderEndDate" to turnOrderEndDateMillis,
+                    "turnOrderEndDateFormatted" to turnOrderEndDateFormatted, // For displaying purposes
+                    "timestamp" to currentTimeMillis
                 )
+
                 Firebase.firestore.collection("systemData").document("featuredMovie")
                     .set(movieData).await()
                 withContext(Dispatchers.Main) {
                     _featuredMovie.value = movie
                 }
+
+                // Add the movie to chosenMovies
+                val chosenMovieDocumentName = "${movie.title}(Chosen)"
+                Firebase.firestore.collection("chosenMovies").document(chosenMovieDocumentName)
+                    .set(movieData).await()
+
+                withContext(Dispatchers.Main) {
+                    _featuredMovie.value = movie
+                }
+                Log.d("DateConversion", "Turn order end date: $turnOrderEndDateFormatted")
+
             } catch (e: Exception) {
-                Log.e("MoviesViewModel", "Error setting featured movie: ${e.message}")
+                Log.e("setFeaturedMovie", "Error setting featured movie", e)
             }
         }
     }
@@ -105,35 +154,31 @@ class MoviesViewModel(private val movieRepository: MovieRepository): ViewModel()
         }
     }
 
-    // Other functions as needed...
     fun getMovieFromListById(movieId: Int): Movie? {
         return _moviesList.value.firstOrNull { it.id == movieId }
     }
-
-    fun addMovieToChosen(movie: Movie, user: Users) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val chosenMovieData = hashMapOf(
-                    "title" to movie.title,
-                    "posterPath" to movie.posterPath,
-                    "userId" to user.uid,
-                    "userName" to user.displayName,
-                    "turnOrderEndDate" to System.currentTimeMillis() + 1209600000, // 2 weeks in ms
-                    "timestamp" to System.currentTimeMillis() // For ordering when displaying previous movies
-                )
-                Firebase.firestore.collection("chosenMovies")
-                    .add(chosenMovieData)
-                    .await()
-                // Set this movie as the featured movie after successfully adding it to chosenMovies
-                setFeaturedMovie(movie, user) // Assuming this updates Firestore and _featuredMovie state
-            } catch (e: Exception) {
-                Log.e("ViewModel", "Error adding movie to chosenMovies", e)
-            }
-        }
+    init {
+        fetchChosenMovies()
     }
 
-
+    fun fetchChosenMovies() {
+        viewModelScope.launch {
+            val db = Firebase.firestore
+            db.collection("chosenMovies")
+                .orderBy("timestamp")
+                .get()
+                .addOnSuccessListener { documents ->
+                    val moviesList = documents.toObjects(ChosenMovie::class.java)
+                    _chosenMovies.value = moviesList
+                }
+                .addOnFailureListener { exception ->
+                    // Handle any errors here
+                }
+        }
+    }
 }
+
+
 
 sealed class MovieDetailsState {
     object Loading : MovieDetailsState()

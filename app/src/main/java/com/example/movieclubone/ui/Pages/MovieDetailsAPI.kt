@@ -1,10 +1,8 @@
-package com.example.movieclubone.movieSearch
+package com.example.movieclubone.ui.Pages
 
-import addMovieToUserProfile
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,20 +22,12 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.movieclubone.bottomappbar.BottomNavigationBar
 import com.example.movieclubone.ui.login.AuthViewModel
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.style.LineHeightStyle
-import removeMovieFromUserProfile
 import androidx.compose.runtime.*
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.example.movieclubone.movieSearch.Movie
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase

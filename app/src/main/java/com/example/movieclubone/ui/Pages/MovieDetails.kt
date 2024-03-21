@@ -1,6 +1,5 @@
-package com.example.movieclubone.movieSearch
+package com.example.movieclubone.ui.Pages
 
-import addMovieToUserProfile
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -20,7 +19,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.movieclubone.ViewModels.MoviesViewModel
 import com.example.movieclubone.bottomappbar.BottomNavigationBar
+import com.example.movieclubone.movieSearch.Movie
 import com.example.movieclubone.ui.login.AuthViewModel
 import removeMovieFromUserProfile
 

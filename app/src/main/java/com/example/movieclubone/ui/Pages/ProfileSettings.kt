@@ -41,7 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.example.movieclubone.TurnOrder
-import com.example.movieclubone.movieSearch.MoviesViewModel
+import com.example.movieclubone.ViewModels.MoviesViewModel
 import kotlinx.coroutines.delay // Import for simulated delay
 import com.example.movieclubone.dataClasses.Users
 import com.google.firebase.auth.FirebaseAuth
@@ -89,6 +89,7 @@ fun ProfileSettings(
                 }
 
                 Log.d("ProfileSettings", "Featured movie check completed: canChooseMovie = $canChooseMovie")
+                Log.d("ProfileSettings", "Is current user admin?: ${currentUser?.isAdmin}")
             } catch (e: Exception) {
                 Log.e("ProfileSettings", "Error fetching featured movie", e)
                 // Optionally, handle the error case by setting canChooseMovie accordingly
@@ -117,6 +118,17 @@ fun ProfileSettings(
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text("Sign Out")
+            }
+            if (currentUser?.isAdmin == true) {
+                Log.d("ProfileSettings", "Current user is admin")
+                Button(
+                    onClick = {
+                        navController.navigate("AdminPage")
+                    },
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Text("Admin Page")
+                }
             }
             if (currentUser?.turnOrder == 0 && canChooseMovie) {
                 Button(
@@ -252,13 +264,15 @@ suspend fun getCurrentUserAsync(): Users? {
     // Assuming that turnOrder and nextPickDate are stored within the user's document in Firestore
     val turnOrder = userDocument.getLong("turnOrder")?.toInt() // Firestore stores numbers as Long, convert to Int
     val nextPickDate = userDocument.getDate("nextPickDate") // Firestore can store and retrieve Date objects directly
+    val isAdmin = userDocument.getBoolean("isAdmin")
 
     return Users(
         uid = firebaseUser.uid,
         displayName = firebaseUser.displayName,
 //        photoUrl = firebaseUser.photoURL?.toString(),
         turnOrder = turnOrder,
-        nextPickDate = nextPickDate
+        nextPickDate = nextPickDate,
+        isAdmin = isAdmin
     )
 
 }

@@ -60,4 +60,19 @@ class TurnOrder(private val firestore: FirebaseFirestore) {
     }
 }
 
+fun fetchUserPrivileges(userId: String, onResult: (Boolean) -> Unit) {
+    val db = FirebaseFirestore.getInstance()
+    db.collection("users").document(userId).get().addOnSuccessListener { document ->
+        if (document.exists()) {
+            val isAdmin = document.getBoolean("isAdmin") ?: false
+            onResult(isAdmin)
+        } else {
+            onResult(false)
+        }
+    }.addOnFailureListener {
+        onResult(false)
+    }
+}
+
+
 
