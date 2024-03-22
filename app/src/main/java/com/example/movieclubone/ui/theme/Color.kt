@@ -1,11 +1,14 @@
-package com.example.movieclubone.ui.theme
-
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val DarkPrimary = Color(0xFFD32F2F)
+val DarkSecondary = Color(0xFFD32F2F)
+val DarkBackground = Color(0xFF121212)
+val DarkSurface = Color(0xFF1E1E1E)
+val LightPrimary = Color(0xFFD32F2F)
+val LightSecondary = Color(0xFFD32F2F)
+val LightBackground = Color(0xFFFFFFFF)
+val LightSurface = Color(0xFFFFFFFF)
+val OnPrimary = Color.White
+val OnSecondary = Color.White
+val OnBackground = Color.Black
+val OnSurface = Color.Black

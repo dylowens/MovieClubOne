@@ -2,6 +2,7 @@ package com.example.movieclubone
 
 import ChatViewModel
 import FirebaseUISignIn
+import MovieClubOneTheme
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -19,7 +20,6 @@ import com.example.movieclubone.movieSearch.MovieApiService
 import com.example.movieclubone.movieSearch.MovieRepository
 import com.example.movieclubone.ViewModels.MoviesViewModel
 import com.example.movieclubone.ui.login.AuthViewModel
-import com.example.movieclubone.ui.theme.MovieClubOneTheme
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser

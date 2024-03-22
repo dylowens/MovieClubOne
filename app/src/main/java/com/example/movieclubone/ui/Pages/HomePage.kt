@@ -3,9 +3,10 @@ package com.example.movieclubone.ui.Pages
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -95,49 +97,129 @@ fun HomePage(
 @Composable
 fun TopIconContainer(turnOrder: TurnOrder) {
     val users = remember { mutableStateOf(emptyList<Users>()) }
+    var showDialog by remember { mutableStateOf(false) }
+    var isAdmin by remember { mutableStateOf<Users?>(null) }
 
     // Fetch turn order and users' data
     LaunchedEffect(key1 = true) {
         turnOrder.fetchTurnOrder { fetchedUsers, _ ->
             users.value = fetchedUsers
+            isAdmin = fetchedUsers.find { it.isAdmin == true }
         }
     }
 
+// Content for showing the users
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { showDialog = true },
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         users.value.forEachIndexed { index, user ->
             user.photoUrl?.let { photoUrl ->
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                    // Check if the user is the first one in the turn order list
-                    val imageModifier = if (index == 0) {
-                        Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .border(5.dp, Color.Green, CircleShape) // Apply a green border if it's the first user
-                    } else {
-                        Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                    }
+                    // Modifier for the profile image
+                    val imageModifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .then(
+                            if (index == 0) {
+                                Modifier.border(
+                                    width = 2.dp, // Adjust the thickness as needed
+                                    color = Color.Black,
+                                    shape = RoundedCornerShape(50) // Soft edges with a round shape
+                                )
+                            } else Modifier
+                        )
+
                     Image(
                         painter = rememberAsyncImagePainter(photoUrl),
                         contentDescription = "Profile",
                         modifier = imageModifier
                     )
-                    // Assuming the displayName might contain the first name or full name
+
+                    // Displaying the user's first name or full name
                     val firstName = user.displayName?.split(" ")?.firstOrNull() ?: ""
                     Text(text = firstName, textAlign = TextAlign.Center)
                 }
             }
         }
     }
+
+    if (showDialog) {
+        Dialog(onDismissRequest = { showDialog = false }) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                ) {
+                    Text(text = "Turn Order", style = MaterialTheme.typography.headlineMedium)
+                    Divider(color = Color.Gray, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    users.value.forEachIndexed { index, user ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (index == 0) "Current: " else "${index + 1}.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.width(80.dp) // Adjusted width for alignment
+                            )
+                            Image(
+                                painter = rememberAsyncImagePainter(user.photoUrl),
+                                contentDescription = "Profile",
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .border(1.dp, Color.Gray, CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = user.displayName ?: "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // Clickable text for suggesting an edit
+                    Text(
+                        text = "Suggest an edit",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+                        modifier = Modifier
+                            .clickable {
+                                isAdmin?.let { admin ->
+                                    // Implement the logic to send a message to the admin
+                                    // sendMessageToAdmin(admin)
+                                }
+                                showDialog = false
+                            }
+                            .align(Alignment.End)
+                            .padding(8.dp)
+                    )
+                    Text(
+                        text = "Turn Order will Rotate Every Other Tuesday at 7:00pm PST.",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(8.dp)
+                    )
+                }
+            }
+        }
+    }
 }
-
-
 @Composable
 fun MainContentFeed(featuredMovie: MutableState<ChosenMovie?>, navController: NavController) {
     Column {
@@ -200,6 +282,7 @@ fun FeaturedMovieItem(chosenMovie: ChosenMovie) {
             }
         }
     }
+
 }
 
 
