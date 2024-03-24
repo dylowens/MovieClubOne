@@ -7,6 +7,7 @@ import JoinClubCreateClub
 import JoinClubID
 import PreviouslyChosenPage
 import ProfileSettings
+import SignIn
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -23,7 +24,6 @@ import com.example.movieclubone.ViewModels.MoviesViewModel
 import com.example.movieclubone.ui.Pages.HomePage
 import com.example.movieclubone.ui.login.AuthViewModel
 import com.example.movieclubone.ui.login.CreateClub
-import com.example.movieclubone.ui.Pages.SignIn
 
     @Composable
     fun Navigation(
@@ -59,7 +59,7 @@ import com.example.movieclubone.ui.Pages.SignIn
                 MovieSearchScreen(navController, moviesViewModel, authViewModel)
             }
             composable("ChatScreen") {
-                ChatScreen(navController, chatViewModel)
+                ChatScreen(navController, chatViewModel, authViewModel)
             }
             composable("MovieDetails/{movieId}") { backStackEntry ->
                 backStackEntry.arguments?.getString("movieId")?.toIntOrNull()?.let { movieId ->

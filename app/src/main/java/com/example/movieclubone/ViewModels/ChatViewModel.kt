@@ -1,6 +1,11 @@
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.movieclubone.R
 import com.example.movieclubone.dataClasses.Message
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -74,6 +79,7 @@ class ChatViewModel : ViewModel() {
             val userName = auth.currentUser?.displayName ?: "Anonymous User"
             val timestamp = Timestamp.now()
             val photoUrl = auth.currentUser?.photoUrl.toString()
+            val botphotoUrl = R.drawable.aibot.toString()
 
             if (content.startsWith("@bot:")) {
                 val promptContent = content.removePrefix("@bot:")
@@ -136,6 +142,7 @@ class ChatViewModel : ViewModel() {
                         message = promptResponse,
                         timestamp = promptCreateTime,
                         type = "bot",
+                        photoUrl = "",
                         response = promptResponse
                     )
 
@@ -148,6 +155,7 @@ class ChatViewModel : ViewModel() {
             } else {
                 // Regular user message handling
                 val newMessage = Message(
+                    id = UUID.randomUUID().toString(),
                     userId = userId,
                     userName = userName,
                     message = content,
@@ -163,12 +171,19 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    fun deleteMessage(messageId: String) {
-        Log.d("ChatViewModel", "Attempting to delete message with ID: $messageId")
+    fun deleteMessage(context: Context, id: String) {
+
+        Log.d("ChatViewModel", "Attempting to delete message with ID: $id")
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                db.collection("messages").document(messageId).delete().await()
-                Log.d("ChatViewModel", "Message deleted successfully")
+
+                val message = db.collection("messages").whereEqualTo("id", id).get().await()
+                if(message.documents.isEmpty()) {
+                    Toast.makeText(context, "Cannot Delete Message", Toast.LENGTH_SHORT).show()
+                } else {
+                    message.documents.firstOrNull()?.reference?.delete()?.await()
+                    Log.d("ChatViewModel", "Message deleted successfully")
+                }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error deleting message: ", e)
             }
