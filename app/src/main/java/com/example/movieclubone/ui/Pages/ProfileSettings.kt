@@ -35,11 +35,13 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import com.example.movieclubone.TurnOrder
 import com.example.movieclubone.ViewModels.MoviesViewModel
 import kotlinx.coroutines.delay // Import for simulated delay
@@ -108,6 +110,13 @@ fun ProfileSettings(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Page title
+            Text(
+                text = "Profile Settings",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    color = Color.Black)
             // Sign Out Button
             Button(
                 onClick = {

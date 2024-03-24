@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -24,107 +25,108 @@ import com.example.movieclubone.ViewModels.MoviesViewModel
 import com.example.movieclubone.bottomappbar.BottomNavigationBar
 import com.example.movieclubone.movieSearch.Movie
 import com.example.movieclubone.ui.login.AuthViewModel
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieSearchScreen(navController: NavController, viewModel: MoviesViewModel, authViewModel: AuthViewModel) {
     val searchBarState = remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val movies = viewModel.moviesList.value // Assume this LiveData or StateFlow that collects movies from your ViewModel
+    val movies = viewModel.moviesList.value // Assume this collects movies from your ViewModel
 
     Scaffold(
-        topBar = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    SearchBar(
-                        query = searchBarState.value,
-                        onQueryChanged = { searchBarState.value = it },
-                        onSearch = {
-                            viewModel.searchMovies(searchBarState.value)
-                            keyboardController?.hide()
-                        }
-                    )
-                }
-        },
         bottomBar = { BottomNavigationBar(navController, authViewModel) }
-
-
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
+            // Page title
+            Text(
+                text = "Movie Search",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                color = Color.Black
+            )
+            SearchBar(
+                query = searchBarState.value,
+                onQueryChanged = { searchBarState.value = it },
+                onSearch = {
+                    viewModel.searchMovies(searchBarState.value)
+                    keyboardController?.hide()
+                }
+            )
             MoviesList(movies = movies, navController)
         }
-
     }
-
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(query: String, onQueryChanged: (String) -> Unit, onSearch: () -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    OutlinedTextField(
+    TextField(
         value = query,
         onValueChange = onQueryChanged,
         singleLine = true,
-        label = { Text("Search Movies") },
+        placeholder = { Text("Search Movies") },
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {
             onSearch()
             keyboardController?.hide() // Ensure the keyboard is hidden
         }),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = MaterialTheme.shapes.small, // Rounded corners for the text field
+        colors = TextFieldDefaults.textFieldColors() // Customize colors to fit your theme
     )
 }
 
 @Composable
 fun MoviesList(movies: List<Movie>, navController: NavController) {
-    LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
+    LazyColumn(contentPadding = PaddingValues(all = 16.dp)) {
         items(movies) { movie ->
             MovieRow(movie = movie, navController)
         }
     }
 }
 
-
 @Composable
 fun MovieRow(movie: Movie, navController: NavController) {
-    // Example of choosing a different size. For dynamic sizing, you might adjust based on screen size or other factors.
-    val posterSize = "w342" // Choose based on what TMDB supports and your app needs. "w342" is generally a good middle-ground.
-    val imageUrlBase = "https://image.tmdb.org/t/p/$posterSize"
-    val posterUrl = movie.posterPath?.let { imageUrlBase + it }
-
+    val posterUrl = movie.posterPath?.let { "https://image.tmdb.org/t/p/w342$it" }
     val route = "MovieDetailsAPI/${movie.id}"
 
-    Surface(
+    Card(
         modifier = Modifier
-            .clickable { navController.navigate(route) } // Add navigation action on click
-            .padding(vertical = 4.dp)
+            .clickable { navController.navigate(route) }
+            .padding(vertical = 8.dp)
             .fillMaxWidth(),
-        color = Color.LightGray,
-        shadowElevation = 2.dp
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = MaterialTheme.shapes.medium
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Display movie poster if available
-
             posterUrl?.let {
                 Image(
                     painter = rememberAsyncImagePainter(it),
                     contentDescription = "Movie Poster",
                     modifier = Modifier
-                        .height(200.dp) // You might adjust this height based on the size of the image or your UI needs.
+                        .height(200.dp)
                         .fillMaxWidth(),
-                    contentScale = ContentScale.FillHeight
-
+                    contentScale = ContentScale.FillWidth
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            Text(text = movie.title, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = movie.title,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = movie.overview, style = MaterialTheme.typography.bodySmall)
+            Text(
+                text = movie.overview,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3, // Limit overview text to avoid clutter
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
-

@@ -2,11 +2,14 @@ package com.example.movieclubone.ui.Pages
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +29,6 @@ import com.example.movieclubone.dataClasses.ChosenMovie
 import com.example.movieclubone.dataClasses.Users
 import com.example.movieclubone.movieSearch.Movie
 import com.example.movieclubone.ViewModels.MoviesViewModel
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
@@ -86,6 +88,14 @@ fun HomePage(
         bottomBar = { BottomNavigationBar(navController, authViewModel) }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
+            // Page title
+            Text(
+                text = "HomePage",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                color = Color.Black
+            )
             TopIconContainer(turnOrder)
             if (featuredMovie.value != null) {
                 MainContentFeed(featuredMovie, navController) // Here featuredMovie is already State<Movie?>
@@ -100,7 +110,6 @@ fun TopIconContainer(turnOrder: TurnOrder) {
     var showDialog by remember { mutableStateOf(false) }
     var isAdmin by remember { mutableStateOf<Users?>(null) }
 
-    // Fetch turn order and users' data
     LaunchedEffect(key1 = true) {
         turnOrder.fetchTurnOrder { fetchedUsers, _ ->
             users.value = fetchedUsers
@@ -108,45 +117,25 @@ fun TopIconContainer(turnOrder: TurnOrder) {
         }
     }
 
-// Content for showing the users
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable { showDialog = true },
-        horizontalArrangement = Arrangement.SpaceEvenly
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.background
     ) {
-        users.value.forEachIndexed { index, user ->
-            user.photoUrl?.let { photoUrl ->
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                    // Modifier for the profile image
-                    val imageModifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .then(
-                            if (index == 0) {
-                                Modifier.border(
-                                    width = 2.dp, // Adjust the thickness as needed
-                                    color = Color.Black,
-                                    shape = RoundedCornerShape(50) // Soft edges with a round shape
-                                )
-                            } else Modifier
-                        )
-
-                    Image(
-                        painter = rememberAsyncImagePainter(photoUrl),
-                        contentDescription = "Profile",
-                        modifier = imageModifier
-                    )
-
-                    // Displaying the user's first name or full name
-                    val firstName = user.displayName?.split(" ")?.firstOrNull() ?: ""
-                    Text(text = firstName, textAlign = TextAlign.Center)
-                }
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            users.value.take(5).forEachIndexed { index, user -> // Limit to 5 for cleaner UI
+                UserIcon(user, index == 0)
             }
+            MoreIcon(users.value.size > 5) // Indicate more users are available
         }
     }
-
     if (showDialog) {
         Dialog(onDismissRequest = { showDialog = false }) {
             Surface(
@@ -220,70 +209,134 @@ fun TopIconContainer(turnOrder: TurnOrder) {
         }
     }
 }
+
+
+@Composable
+fun UserIcon(user: Users, isCurrent: Boolean) {
+    val borderColor = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .padding(4.dp)
+            .size(50.dp)
+            .clip(CircleShape)
+            .border(2.dp, borderColor, CircleShape)
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(user.photoUrl),
+            contentDescription = "Profile of ${user.displayName}",
+            modifier = Modifier
+                .size(46.dp) // Slightly smaller to create a border effect
+                .clip(CircleShape)
+        )
+    }
+}
+
+@Composable
+fun MoreIcon(hasMore: Boolean) {
+    if (hasMore) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .padding(4.dp)
+                .size(50.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Text("+", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+        }
+    }
+}
+
+
 @Composable
 fun MainContentFeed(featuredMovie: MutableState<ChosenMovie?>, navController: NavController) {
-    Column {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         featuredMovie.value?.let { chosenMovie ->
             FeaturedMovieItem(chosenMovie = chosenMovie)
         }
 
-        Button(onClick = { navController.navigate("PreviouslyChosenPage") },
-            modifier = Modifier.align(Alignment.CenterHorizontally) // Center the button
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { navController.navigate("PreviouslyChosenPage") },
+            modifier = Modifier.padding(8.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Text("Previously Shown Movies")
+            Icon(imageVector = Icons.Filled.Lock, contentDescription = "Previously Shown Movies", tint = MaterialTheme.colorScheme.onSecondary)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Previously Shown Movies", color = MaterialTheme.colorScheme.onSecondary)
         }
     }
 }
-
 @Composable
 fun FeaturedMovieItem(chosenMovie: ChosenMovie) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        // Background for attention drawing graphics
-        Card(
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp,
+            pressedElevation = 8.dp,
+            focusedElevation = 7.dp,
+            hoveredElevation = 7.dp
+        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally, // Ensure the column itself aligns its children in the center horizontally
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                .padding(16.dp)
+                .fillMaxWidth() // Ensure the Column takes up the full width of the Card
         ) {
-            // Custom layout for the first item
-            Column(modifier = Modifier.padding(16.dp)) {
-                // Assuming you have a 'MoviePoster' composable or similar logic for displaying the poster
-                Image(
-                    painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${chosenMovie.posterPath}"),
-                    contentDescription = null,
-                    modifier = Modifier.size(200.dp).align(Alignment.CenterHorizontally) // Center the image
+            Image(
+                painter = rememberAsyncImagePainter(model = "https://image.tmdb.org/t/p/w500${chosenMovie.posterPath}"),
+                contentDescription = "Movie Poster",
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(RoundedCornerShape(12.dp)) // Maintains the image aspect ratio and clips to a rounded shape
+            )
 
-                )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Movie details
-                Text(
-                    text = chosenMovie.title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-
-                Text(
-                    text = "Picked by: ${chosenMovie.userName}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-                Log.d("HomePage", "turnOrderEndDateFormatted: ${chosenMovie.turnOrderEndDateFormatted}")
-
-                // "Currently Watching" message
-                Text(
-                    text = "Currently Watching. You have until: ${chosenMovie.turnOrderEndDateFormatted}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
+            // For the title and the popcorn icon, wrapping them in a Box with centered alignment to ensure they are centered as well
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Lock, // Placeholder for your icon
+                        contentDescription = "Icon",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = chosenMovie.title,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
             }
+
+            Text(
+                text = "Picked by: ${chosenMovie.userName}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Currently Watching. You have until: ${chosenMovie.turnOrderEndDateFormatted}",
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center, // Ensures the text itself is centered within its layout space
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
-
 }
 
 
-
+// Assuming you have a Popcorn and Movie Tape icon defined somewhere, or use placeholders if not
+//@Composable
+//fun Icons.Default.Popcorn() = Icons.Filled.Fastfood // Placeholder for a popcorn icon
