@@ -7,10 +7,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.movieclubone.dataClasses.ChosenMovie
-import com.example.movieclubone.dataClasses.Users
-import com.example.movieclubone.movieSearch.Movie
-import com.example.movieclubone.movieSearch.MovieRepository
+import com.example.movieclubone.Data.ChosenMovie
+import com.example.movieclubone.Data.Users
+import com.example.movieclubone.Feature.movieSearch.Movie
+import com.example.movieclubone.Feature.movieSearch.MovieRepository
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject

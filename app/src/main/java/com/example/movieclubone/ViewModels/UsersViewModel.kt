@@ -1,12 +1,10 @@
 package com.example.movieclubone.ViewModels
 
 import android.util.Log
-import androidx.compose.runtime.Recomposer
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.movieclubone.dataClasses.Users
+import com.example.movieclubone.Data.Users
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.launch

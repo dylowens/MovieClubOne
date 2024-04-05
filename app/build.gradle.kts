@@ -53,7 +53,7 @@ android {
 
 dependencies {
 
-    implementation("com.airbnb.android:lottie-compose:4.2.2")
+    implementation("com.airbnb.android:lottie-compose:4.0.0")
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
